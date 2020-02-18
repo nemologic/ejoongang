@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>전자거래 사이트</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+  <div id="app" class="container">    
+    <div class="header-container">
+      <ul class="member">
+        <li><a href="/">홈</a></li>
+        <li>로그인</li>
+        <li>정보수정</li>
+      </ul>
+    </div>
+    <div class="header-container2">
+      <header class="header">
+        <h1 class="logo"><a href="/"><img src="../images/logo.gif" alt="중앙청과 전자거래"></a></h1>
+        <nav class="navigation">
+          <h2 class="a11y-hidden">메인 메뉴</h2>
+          <ul class="menu">
+            <li class="menu-item"><a href="/" role="button" class="btn-menu">전자거래</a></li>
+            <li class="menu-item"><a href="/" role="button" class="btn-menu">실적조회</a></li>
+            <li class="menu-item"><a href="/" role="button" class="btn-menu">관 리</a> </li>
+          </ul>
+        </nav>
+      </header>
+    </div>
+    <main class="main" role="main">
+        <form @submit="">
+           <div>
+             <div class="inline-block w90p " >
+                <ul class="nav-header">
+                    <li style="width:35%">
+                        <label class="nav-label w80">일 자</label>                
+                        <vuejs-datepicker :language="ko" format="yyyy-MM-dd" 
+                        :value="params.sdate"
+                        input-class="form-input text-center w90"
+                        style="display: inline-block;">
+                        </vuejs-datepicker>
+                        ~
+                        <vuejs-datepicker :language="ko" format="yyyy-MM-dd" 
+                        :value="params.edate"
+                        input-class="form-input text-center w90"
+                        style="display: inline-block;">
+                        </vuejs-datepicker>
+                   
+                    </li>
+                    <li style="width:35%">
+                      <label class="nav-label w80"> 출하자</label>
+                      <auto-complete style="width: calc(98% - 80px) "
+                        :required=true                        
+                        src="http://localhost:21482/Common/WebServices/WSETSService.asmx/ShipperList"
+                        @return-value="params.shipper = $event.code ">
+                        </auto-complete>
+                    </li>
+                    <li>
+                      <label class="nav-label w80"> 생산자</label>
+                      <input type="text" class="form-input" style="width: calc(98% - 80px)" v-model="params.farmer" />
+                    </li>
+                  </ul>
+                  <ul class="nav-header bt-0">
+                    <li style="width:35%">
+                        <label class="nav-label w80">품목</label>                                      
+                        <auto-complete style="width: calc(98% - 80px) "  
+                        :required=true                        
+                        :params="{kind:'R',code:'ITEM',name:'ITEM_NAME'}"
+                         src="http://localhost:21482/Common/WebServices/WSETSService.asmx/Goods"
+                         @return-value="params.item = $event.code"                     
+                        >
+                       </auto-complete>
+                    </li>
+                    <li style="width:35%">
+                      <label class="nav-label w80">중도매인</label>
+                      <auto-complete  style="width: calc(98% - 80px) " 
+                        :required=true
+                        :params="{kind:'R_WHOLESALE_MEMBER_POPUP',code:'BROKER',name:'STORE_NAME'}"
+                        src="http://localhost:21482/Common/WebServices/WSETSService.asmx/WholeSalesList"
+                        @return-value="params.wholesale = $event.code "
+                        ></auto-complete>                     
+                    </li>
+                    <li> 
+                      <label class="nav-label w80">구분</label>
+                      <select class="form-select" v-model="params.status" style="width: calc(98% - 80px) "  >
+                        <option selected="selected"  >전체</option>
+                        <option value="11">간소화 작성중</option>
+                        <option value="12">간소화등록</option>
+                        <option value="13">간소화등록 취소</option>
+                        <option value="43">구매확인</option>
+                        <option value="44">구매확인 취소</option>
+                        <option value="62">간소화정산</option>                    
+                    </select>
+                    </li>
+                  </ul>
+            </div>           
+                <div class="search-btn-container" style="width:9%">
+                    <button type="button" @click="search">조회</button>
+                </div>
+            </div>
+            <div > 버튼  </div>
+            <div class="mt-4">
+                <h2 class="a11y-hidden">검색결과</h2>
+                        
+                <table class="search-table mt-3" >
+                    <thead>
+                    <tr>                      
+                        <th>송장일자</th>
+                        <th>구분</th>
+                        <th>번호</th>
+                        <th>송품장번호</th>
+                        <th>출하주/품종</th>
+                        <th>중도매인</th>
+                        <th>건수</th>
+                        <th>물량</th> 
+                        <th>수량</th> 
+                        <th>금액</th> 
+                        <th>진행상태</th>
+                        <th>정산일자</th>
+                    </tr>
+                    </thead>
+                    <tbody>  
+                    <tr  v-for=" (row,i) in rows"  @click="href(row)"> 
+                        <td>{{row.TDATE}}</td>
+                        <td>{{row.ITEM_TYPE_NAME}}</td>
+                        <td>{{row.S_NO}}</td>
+                        <td>{{row.TDATE}}-{{row.S_NO}}</td>
+                        <td>{{row.CODE_NAME}}<br/>{{row.ITEM_NAME}}</td>                    
+                        <td>{{row.BROKER}}</td>
+                        <td>{{row.ROWCOUNT}}</td>
+                        <td class="text-right">{{numberWithCommas(Number(row.SWEIGHT))}}</td>
+                        <td class="text-right">{{numberWithCommas(Number(row.SQTY))}}</td>
+                        <td class="text-right">{{ numberWithCommas(Number(row.SAMT)) }}</td>
+                        <td>{{row.STATUS_NAME}}</td>
+                        <td>{{row.JDATE}}</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                      <tr v-if="rows.length === 0">
+                        <td colspan='12' >
+                         조회내역이 없습니다.
+                        </td>
+                      </tr>
+                      <tr v-if="rows.length > 0">                        
+                         <td colspan='12' >                         
+                         </td>                       
+                      </tr>
+
+                  </tfoot>
+                </table>                  
+            </div>
+
+             <div class="paginations mt-4">
+                <ul >                 
+                  <li v-for ="(row, i) in params.page_size">
+                    <button type="button" @click="search(i+1)" >{{i+1}}</button>
+                  </li>
+                </ul>
+            </div>
+      </form>
+    </main>
+
+    <div >
+      <modal v-if="showModal" @close="showModal = false">       
+        <h3 slot="header">custom header</h3>
+        <h3 slot="body">custom header</h3>
+      </modal>
+    </div>
+
+  </div>
+
+    
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+  <script src="http://cdn.polyfill.io/v1/polyfill.min.js" async defer></script>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/vuejs-datepicker"></script>
+  <script src="https://unpkg.com/vuejs-datepicker/dist/locale/translations/ko.js"></script>
+  <script type="text/babel" src="../components/autocomplete/Autocomplete.js"></script>
+  <script src="../components/mixin.js"></script>  
+  <script type="text/babel">
+
+    new Vue({
+      el: '#app',
+      mixins: [myMixin],
+      components: {
+        vuejsDatepicker
+      },
+      mounted () {
+
+      },
+      data() {
+        return {
+          baseUrl: 'http://localhost:21482',
+          showModal: false,
+          ko: vdp_translation_ko.js, 
+          rows : [],
+          params : {
+                    sdate:this.todate(0),edate:this.todate(),
+                    shipper:'',wholesale:'',farmer:'',status:'',item:'',
+                    page :1,page_size:10
+                   }                  
+          }
+      },
+      methods: {   
+        search(e,page) {
+            const url = this.baseUrl + "/Common/WebServices/WSETSCoreService.asmx/TradeList";
+                let params = null;
+                let callback = (res) => {
+                  if(res.status === 200 || res.status === 201 ) {
+                      this.rows = res.data;
+                  }
+                }
+                this.params.page = (page === undefined)? 1 : page;
+                params = {json : JSON.stringify(this.params),method:'R_TRADE_LIST_I'};
+                this.axios(url,params,callback);
+        },
+        href(row){          
+           const tdate = row.TDATE,s_no = row.S_NO , kind=row.KIND;           
+           location.href = 'http://localhost:5500/Employee/register.html?'
+                  .concat('tdate=',tdate,'&kind=',kind,'&s_no=',s_no);
+           //console.log(window)            
+        },
+
+
+      },     
+      computed: {
+
+
+      },
+      watch : {
+          
+      }
+
+
+    });
+
+  </script>
+</body>
+
+</html>

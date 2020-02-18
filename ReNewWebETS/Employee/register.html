@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>전자거래 사이트</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+  <div id="app" class="container">    
+    <div class="header-container">
+      <ul class="member">
+        <li><a href="/">홈</a></li>
+        <li>로그인</li>
+        <li>정보수정</li>
+      </ul>
+    </div>
+    <div class="header-container2">
+      <header class="header">
+        <h1 class="logo"><a href="/"><img src="../images/logo.gif" alt="중앙청과 전자거래"></a></h1>
+        <nav class="navigation">
+          <h2 class="a11y-hidden">메인 메뉴</h2>
+          <ul class="menu">
+            <li class="menu-item"><a href="/" role="button" class="btn-menu">전자거래</a></li>
+            <li class="menu-item"><a href="/" role="button" class="btn-menu">실적조회</a></li>
+            <li class="menu-item"><a href="/" role="button" class="btn-menu">관 리</a> </li>
+          </ul>
+        </nav>
+      </header>
+    </div>
+    <main class="main" role="main">
+      <form @submit="checkForm">
+      <div class="stepper-wrapper">
+        <h2 class="a11y-hidden">진행프로세서</h2>
+        <Ul class="stepper-header">
+          <!-- @click="isActive = !isActive" -->
+          <li v-for="(n,i) in steps.length" @click=" steps[i].isActive = !steps[i].isActive , step = i">
+            <a href="#">
+              <span class="border" :class="{ 'isActive' : steps[i].isActive}"></span>
+              <span class="spin"
+                :class="[!steps[i].isActive? 'circle' : steps[i].isActive, 'circle'] "
+                >{{ steps[i].isActive ? '✔' : n}}               
+              </span>           
+        
+              <span class="label">{{ steps[i].title }}</span>
+            </a>
+          </li>
+        </Ul>
+      </div>
+      <div class="stepper-contents">
+        <p v-if=" step === 0 ">
+          <h2>{{step+1}}. {{ steps[step].title }}</h2>
+          <div style="overflow:auto">
+            <button class="btn right mb-1" aria-label="" title="" 
+            @click="href('http://localhost:5500/Employee/tradelist.html')">목록보기</button>
+          </div>
+          <div>
+            <ul class="nav-header">
+              <li class="w200">
+                <label class="nav-label w80">송장일자</label>
+                <vuejs-datepicker :language="ko" format="yyyy-MM-dd" 
+                  input-class="form-input text-center w100"
+                  :value="regist.head.TDATE"
+                  style="display: inline-block;">
+                </vuejs-datepicker>
+              </li>
+              <li class="w250">
+                <label class="nav-label w80"> 송장번호</label>         
+                {{regist.head.trede_no}}   
+              </li>
+              <li class="w200 text">
+                <label class="nav-label w80">거래형태</label>
+                위탁
+              </li>
+              <li class="w200">
+                <label class="nav-label w80">매매방법</label>
+                정가수의매매
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <ul class="nav-header bt-0">
+              <li style="width:35%">
+                  <label class="nav-label w80">출하주</label>                
+                  <auto-complete style="width: calc(98% - 80px) "
+                  :required=true :item-code="regist.head.CODE"
+                  src="http://localhost:21482/Common/WebServices/WSETSService.asmx/ShipperList"
+                  @return-value="regist.head.CODE = $event.code ">
+                 </auto-complete>
+             
+              </li>
+              <li style="width:35%">
+                <label class="nav-label w80"> 원산지</label>
+                <auto-complete  style="width: calc(98% - 80px) "
+                :required=true :item-code="regist.head.K_COUNTRY"
+                  :params="{kind:'ORIGIN',code:'COUNTRY',name:'COUNTRY_NAME'}"
+                  :src=" baseUrl+'/Common/WebServices/WSETSService.asmx/CommonCode' "
+                  @return-value="regist.head.K_COUNTRY = $event.code ">
+                </auto-complete>
+              </li>
+              <li>
+                <label class="nav-label w80"> 경매사</label>
+                <auto-complete  style="width: calc(98% - 80px) "
+                   :required=true :item-code="regist.head.SIDCODE"
+                  :params="{kind: 'auct'}"
+                  :src=" baseUrl+'/Common/WebServices/WSETSService.asmx/EmployeeList' "
+                  @return-value="regist.head.SIDCODE = $event.code , regist.head.KIND= $event.store ">
+                </auto-complete>
+              </li>
+            </ul>
+            
+          </div>
+
+          <div class="mt-3">
+            <ul class="nav-header">
+              <li>
+                <label class="nav-label w80">배송일자</label>
+                <vuejs-datepicker :language="ko" format="yyyy-MM-dd" 
+                input-class="form-input text-center w100"  
+                :value = "regist.head.DEL_DATE"
+                style="display: inline-block;">
+                </vuejs-datepicker>
+              </li>
+              <li class="w150">
+                <label class="nav-label w80"> 배송구분</label>                
+                <select required class="form-select text-center"   v-model="regist.head.DEL_KIND" 
+                  style="width: calc(97% - 80px) ">
+                  <option value="t">트럭</option>
+                  <option value="y">용달</option>
+                </select>
+              </li>
+              <li class="w200">
+                <label class="nav-label w80" > 운전기사</label>
+                <input type="text" class="form-input w80" maxlength="10" v-model="regist.head.DEL_DRIVER" />
+              </li>
+              <li>
+                <label class="nav-label w80"> 차량번호</label>
+                <input type="text" class="form-input w80" maxlength="10" v-model="regist.head.DEL_CAR_NO"/>
+              </li>
+              <li>
+                <label class="nav-label w80"> 연락처</label>
+                <input type="text" class="form-input w100" maxlength="15" v-model="regist.head.DEL_TEL"/>
+              </li>
+            </ul>
+            <ul class="nav-header bt-0">
+              <li >
+                <label class="nav-label w80">출하주</label>
+                <auto-complete  style="width: calc(98% - 80px) "              
+                result-width="200px"
+                :params="{kind:'BANK',code:'bank_code',name:'bank_name'}"
+                src="http://localhost:21482/Common/WebServices/WSETSService.asmx/CommonCode"
+                @return-value="regist.head.BANK_CODE = $event.code ">                
+                </auto-complete>
+              </li>
+              <li >
+                <label class="nav-label w80"> 계좌번호</label>
+                <input type="text" class="form-input w200"  style="width: calc(98% - 80px) " maxlength="30" v-model="regist.head.ACCOUNT"/>
+              </li>
+              <li>
+                <label class="nav-label w80"> 예금주</label>
+                <input type="text" class="form-input text-center"  style="width: calc(98% - 80px) " v-model="regist.head.OWNER"/>
+
+              </li>
+              <li class="text-right">
+                <label class="nav-label w80">운임</label>
+                <input type="number" class="form-input text-right " max="9999999" style="width: calc(98% - 80px) " v-model="regist.head.DEL_AMT"/>
+              </li>             
+            </ul>
+          </div>
+        
+          <table class="nav-table mt-3"  >
+            <template v-for="(n,i) in len">
+              <tr>
+                <th>입고일자</th>
+                <th>중도매인</th>
+                <th>연락처</th>
+                <th>우편번호</th>
+                <th>주소</th>
+                <th>담당자</th>
+              </tr>
+              <tr>
+                <td> 
+                  <vuejs-datepicker :language="ko" format="yyyy-MM-dd" 
+                  input-class="form-input text-center w100"  
+                  :value="regist.head.IN_DATE">                 
+                  </vuejs-datepicker>
+                </td>
+                <td>
+                  <auto-complete  width="200px"
+                   :required=true
+                   :params="{kind:'R_WHOLESALE_MEMBER_POPUP',code:'BROKER',name:'STORE_NAME'}"
+                    src="http://localhost:21482/Common/WebServices/WSETSService.asmx/WholeSalesList"
+                    @return-value="regist.head.BROKER = $event.code "
+                  ></auto-complete>
+                </td>
+                <td><input type="tel"  class="form-input w100" maxlength="13"  v-model="regist.head.IN_TEL"></td>
+                <td><input type="text" class="form-input text-center w80" maxlength="7"  v-model="regist.head.IN_POST_NO"></td>
+                <td><input type="text" class="form-input w300" v-model="regist.head.IN_JUSO_DETAIL"></td>
+                <td><input type="text" class="form-input w80" v-model="regist.head.IN_CHARGER"> </td>
+              </tr>
+            </template>
+          </table>
+           <div class="mt-3"  style="overflow: auto;">
+            <button @click="process.add" type="button" class="btn right mt-1 mb-1 mr-2" aria-label="추가" title="추가">추가</button>
+          </div>
+          <!-- @click="len += 1" -->
+          <div>
+            <table class="nav-table"  >      
+              <tbody v-for="(row,index) in regist.rows" >
+                <tr>
+                  <td class="w100" rowspan="6"> {{row.S_SERIAL}}</td>
+                  <th colspan="2">생산자명</th>                
+                  <th colspan="2">원산지</th>
+                  <th colspan="2">품종</th>
+                  <td class="w100" rowspan="6">
+                    <button  type="button" aria-label="삭제" title="삭제"  @click="process.del(row.serial)">X</button>
+                  </td>                
+                </tr>
+                <tr >               
+                  <td>
+                    <searcher
+                      :required=true
+                      :key="index"
+                      title="생산자 조회" 
+                      src="http://localhost:21482/Common/WebServices/WSETSService.asmx/FarmerList"
+                      @return-value="row.FARM_NAME = $event.name , row.CHUL_CODE =  format($event.code,'######-######')"
+                      >
+                    </searcher>
+                  </td>
+                  <td><input type="text" readonly required class="form-input text-center" maxlength="13" :value="row.CHUL_CODE" />                    
+                  </td>               
+                  <td  colspan="2">
+                    <auto-complete  
+                    :required=true
+                     width="100%" 
+                    :params="{kind:'ORIGIN',code:'COUNTRY',name:'COUNTRY_NAME'}"
+                    src="http://localhost:21482/Common/WebServices/WSETSService.asmx/CommonCode"
+                    @return-value="row.K_COUNTRY = $event.code"
+                    >
+                  </auto-complete>
+                  </td>
+                  <td colspan="2">
+                    <auto-complete  
+                    :required=true
+                     width="100%" 
+                    :params="{kind:'R',code:'ITEM',name:'ITEM_NAME'}"
+                     src="http://localhost:21482/Common/WebServices/WSETSService.asmx/Goods"
+                     @return-value="row.ITEM= $event.code"                     
+                    >
+                   </auto-complete>
+                  </td>                                             
+                </tr>
+                <tr>
+                  <th>포장</th>
+                  <th>크기</th>
+                  <th>상태(품질)</th>
+                  <th>중량</th>
+                  <th>수량</th>
+                  <th>예정단가</th>
+                </tr>
+                <tr>
+                  <td class="w15p">
+                    <auto-complete
+                     src="http://localhost:21482/Common/WebServices/WSETSService.asmx/Standards"
+                     @return-value="row.STANDARD = $event.code"
+                    >
+                  </auto-complete>
+                  </td>
+                  <td class="w15p"> 
+                    <auto-complete                   
+                     src="http://localhost:21482/Common/WebServices/WSETSService.asmx/Grades"
+                     @return-value="row.GRADE = $event.code"
+                    >
+                  </auto-complete>
+                  </td>
+                  <td class="w15p">
+                    <auto-complete 
+                    :params="{kind:'QUALITY',code:'etccode',name:'etcname'}"
+                    src="http://localhost:21482/Common/WebServices/WSETSService.asmx/CommonCode"
+                    @return-value="row.QUALITY = $event.code"
+                    >
+                  </auto-complete>
+                  </td>
+                  <td >
+                    <input  required type="number" class="form-input text-right w100" v-model="row.WEIGHT" />
+                  </td>     
+                  <td>
+                    <input  required type="number" class="form-input text-right w80" v-model="row.QTY" />
+                  </td> 
+                  <td>
+                    <input  required type="number" class="form-input text-right"  v-model="row.COST"/>
+                  </td>         
+                </tr>
+                <tr>
+                  <th>친환경구분</th>
+                  <th>친환경코드</th>
+                  <th>펠릿</th>
+                  <th>펠릿수량</th>
+                  <th>파렛트포장</th>
+                  <th>파렛트수량</th>
+                </tr>
+                <tr>
+                  <td>
+                    <select name="" class="form-select" v-model="row.G_ENV_KIND" :key="index">
+                      <option value="">선택</option>
+                      <option value="0377">GAP농산물</option>
+                      <option value="0397">무농약</option>
+                      <option value="0395">유기농</option>
+                      <option value="0398">저농약</option>
+                      <option value="0396">전환기유기농</option>              
+                    </select>
+                  </td>
+                  <td>
+                    <input type="text" class="form-input" v-model="row.G_ENV_NO"/>
+                  </td>
+                  <td  >
+                    <select class="form-select" v-model="row.PALLET_YN" >
+                      <option selected="selected" value="">선택</option>
+                      <option value="01">K-S</option>
+                      <option value="02">K-NS</option>
+                      <option value="03">W-S</option>
+                      <option value="04">W-NS</option>
+                      <option value="05">E-S</option>
+                      <option value="06">E-NS</option>
+                      <option value="07">A-S</option>
+                      <option value="08">A-NS</option>              
+                    </select>
+                  </td >
+                  <td ><input type="number" class="form-input w100 text-right" v-model="row.PALLET_CNT"  /> </td>
+                  <td>
+                    <select name=""  class="form-select" v-model="row.BOX" >
+                      <option selected="selected" value="">선택</option>
+                      <option value="01">우든칼라</option>
+                      <option value="02">종이옥타곤</option>
+                      <option value="03">플라스틱옥타곤</option>
+                      <option value="04">상자형팰릿</option>
+                      <option value="05">단프라박스</option>
+                      <option value="06">ng532</option>
+              
+                    </select>
+                  </td>
+                  <td ><input type="number" class="form-input text-right" v-model="row.BOX_QTY"  /> </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- </form> -->
+        </p>
+        <div>
+        </div>
+        <!-- 
+            <p v-else-if=" step === 1  ">
+                  1
+                </p>
+                <p v-else-if=" step === 2  ">
+                  2
+                </p>
+                <p v-else-if=" step === 3  ">
+                  3
+                </p>
+                <p v-else>
+                  4
+            </p> 
+          -->
+      </div>    
+      
+      <div class="main-bottom">
+        <button id="show-modal" @click="process.send()" class="btn right ml-2 mr-5">다음단계</button>
+        <button @click="process.save()"  class="right">저장</button>
+      </div>
+        <input type="submit" value="전송" @submit="checkForm" @click="checkForm">
+      </form>
+    </main>
+    <div >
+      <modal v-if="showModal" @close="showModal = false">       
+        <h3 slot="header">custom header</h3>
+        <h3 slot="body">custom header</h3>
+      </modal>
+    </div>
+
+  </div>
+
+  
+  <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script> -->
+  <script type="text/x-template" id="modal-template">
+    <transition name="modal">
+      <div class="modal-mask">
+        <div class="modal-wrapper">
+          <div class="modal-container">
+  
+            <div class="modal-header">
+              <slot name="header">
+                default header
+              </slot>
+            </div>
+  
+            <div class="modal-body">
+              <slot name="body">
+                default body
+              </slot>
+            </div>
+  
+            <div class="modal-footer">
+              <slot name="footer">
+                default footer
+                <button class="modal-default-button" @click="$emit('close')">
+                  OK
+                </button>
+              </slot>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+  <script src="http://cdn.polyfill.io/v1/polyfill.min.js" async defer></script>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/vuejs-datepicker"></script>
+  <script src="https://unpkg.com/vuejs-datepicker/dist/locale/translations/ko.js"></script>
+  <script type="text/babel" src="../components/autocomplete/Autocomplete.js"></script>
+  <script type="text/babel" src="../components/autocomplete/searcher.js"></script>
+  <script src="../components/mixin.js"></script>  
+  <script type="text/babel">
+
+    Vue.component('modal', {
+    template: '#modal-template'
+    });
+
+    new Vue({
+      el: '#app',
+      mixins: [myMixin],
+      components: {
+        vuejsDatepicker
+      },
+      mounted () {        
+          //this.initialize();
+          //this.addItem();      
+          this.process.bind();
+      },
+      data() {
+        return {
+          baseUrl: 'http://localhost:21482',
+          showModal: false,
+          ko: vdp_translation_ko.js,
+          len: 1,         
+          regist : {
+            params : {method: 'U' , status:'12'},
+            head : { 
+              TDATE: this.todate(),
+              KIND : '1',
+              S_NO : 0,
+              TRADE_NO : 0,
+              CODE:  '',
+              K_COUNTRY: '',
+              SIDCODE: '',                       
+              DEL_DATE: this.todate(),
+              DEL_KIND: 't',
+              DEL_DRIVER: '',
+              DEL_CAR_NO: '',
+              DEL_TEL: '',
+              BANK_CODE : '',
+              ACCOUNT : '',
+              OWNER : '',
+              DEL_AMT : 0,  
+              DEL_MEMO : '',                                                 
+              IN_DATE : this.todate(),
+              BROKER : '',
+              INT_TEL:'',
+              IN_POST_NO: '',
+              INT_POST_SERIAL :'',
+              IN_JUSO:'',
+              IN_JUSO_DETAIL:'',
+              IN_JUSO_DONG:'',
+              IN_GM_CD:'',
+              IN_MEMO:'',
+              IN_CHARGER :'',
+              FARE_NO : ''
+            },
+            rows  : [],
+          },        
+          step: 0,
+          steps: [
+            { isActive: false, title: '간소화 등록' ,  step:11},
+            { isActive: false, title: '중도매인 확인', step:20},
+            { isActive: false, title: '정정/정산요청', step:30},
+            { isActive: false, title: '완료',         step:40}
+          ],
+          process :  {
+            bind : ()=>{          
+                  const query = this.parseQueryString(),
+                        url = this.baseUrl + "/Common/WebServices/WSETSCoreService.asmx/TradeDetailSimpleBind";
+
+                  let params = null;
+                  let callback = (res) => {
+                    if(res.status === 200 || res.status === 201 ) {   
+                      let head = JSON.parse(res.data.head)[0]; 
+
+                      Object.keys(head).forEach((key)=>{
+                        head[key] =typeof head[key] ==='string' ? String(head[key]).replace(/ /gi, "") : head[key];
+                        if (head[key] === null || head[key] === 'null'){
+                            head[key] = '';
+                        }
+                      }); 
+                  
+
+                      this.regist.head.CODE = head.CODE;
+                      this.regist.head.TDATE = this.format(head.TDATE,'####-##-##');
+                      this.process.setNumber(head.S_NO,head.TRADE_NO);
+                    }
+                  }
+                  
+                  params = {method:'R_TRADE_DETAIL',tdate: query.tdate, kind: query.kind, s_no:query.s_no};
+                  this.axios(url,params,callback);
+            },
+            save : ()=>{   
+              if( this.confirm("저장 하시겠습니까?") )
+              {     
+                    const url = this.baseUrl + "/Common/WebServices/WSETSCoreService.asmx/TradeSimple";
+                    let params = null;
+                    let callback = (res) => {
+                      if(res.status === 200 || res.status === 201 ) {
+                        this.process.setNumber(res.data.S_NO,res.data.TRADE_NO);
+                          alert("저장 되었습니다!")
+                      }
+                    }
+    
+                    params = {json : JSON.stringify(this.regist),method:'C'};            
+                    this.axios(url,params,callback);
+              }
+            },
+            send : ()=>{          
+                  this.showModal = true;
+          
+                  const url = this.baseUrl + "/Common/WebServices/WSETSCoreService.asmx/TradeSimple";
+                  let params = null;
+                  let callback = (res) => {
+                    if(res.status === 200 || res.status === 201 ) {
+                      this.process.setNumber(res.data.S_NO,res.data.TRADE_NO);
+                    }
+                  }
+
+                  params = {json : JSON.stringify(this.regist),method:'C'};
+                  this.axios(url,params,callback);
+            },
+            del : (index)=>{          
+                        if ( this.confirm(" 정말삭제 하시겠습니까?")){
+                const url = this.baseUrl + "/Common/WebServices/WSETSCoreService.asmx/TradeDetailSimple";
+                let  copyRegist = {}, params = null;
+
+                    let callback = (res) => {
+                      if(res.status === 200 || res.status === 201 ) {                  
+                      }
+                    }                
+                    copyRegist = JSON.parse(JSON.stringify(this.regist))                
+                    copyRegist.rows = this.regist.rows.splice(index-1,1);
+                    params = {json : JSON.stringify(copyRegist),method:'D'};
+                    copyRegist.rows[0].S_NO > 0 && this.axios(url,params,callback);
+                    }
+            },   
+            add :()=> {
+              const row = {
+                      TDATE: this.regist.head.TDATE,
+                      KIND : 0,
+                      S_NO :  0,
+                      TRADE_NO : 0,
+                      S_SERIAL : this.regist.rows.length + 1,
+                      CODE : '',
+                      FARM_NAME: '',
+                      CHUL_CODE: '',
+                      K_COUNTRY: '',
+                      ITEM: '',
+                      STANDARD: '',
+                      GRADE: '',
+                      QUALITY: '',
+                      WEIGHT: Number(0, 0),
+                      QTY: 0,
+                      COST: 0,                      
+                      G_ENV_KIND: '',
+                      G_ENV_NO: '',
+                      PALLET_YN: '',
+                      PALLET_CNT: 0,
+                      BOX: '',
+                      BOX_QTY: 0
+              };
+                this.regist.rows.push(row)
+            },  
+            setNumber:(s_no,trade_no)=> {
+                this.regist.head.S_NO = s_no;
+                this.regist.head.TRADE_NO = trade_no;
+                this.regist.rows.forEach(row=>{
+                     row.S_NO =  s_no;
+                     row.TRADE_NO =trade_no;
+                })
+            },
+            init: (res)=>{
+              Object.keys(res).forEach((key)=>{
+                params.append(key,this.params[key]);
+            }); 
+            }      
+       },      
+             
+       }
+        
+        
+      },
+      methods: {                
+      //  saveData() {            
+      //  //  if( !this.checkForm() && this.confirm("저장 하시겠습니까?") )
+      //     if( this.confirm("저장 하시겠습니까?") )
+      //     {     
+      //           const url = this.baseUrl + "/Common/WebServices/WSETSCoreService.asmx/TradeSimple";
+      //           let params = null;
+      //           let callback = (res) => {
+      //             if(res.status === 200 || res.status === 201 ) {
+      //                 this.regist.head.no = res.data.no;
+      //                 this.regist.head.trade_no = res.data.trade_no;
+      //                 this.regist.rows.forEach(row=>{
+      //                     row.no = res.data.no;
+      //                     row.trade_no = res.data.trade_no;
+      //                 })
+      //                 alert("저장 되었습니다!")
+      //             }
+      //           }
+
+      //           params = {json : JSON.stringify(this.regist),method:'C'};
+      //      //   this.fetch(url,this.regist,callback);
+      //           this.axios(url,params,callback);
+      //     }
+      //   },            
+      //  sendData() {          
+      //           this.showModal = true;
+       
+      //           const url = this.baseUrl + "/Common/WebServices/WSETSCoreService.asmx/TradeSimple";
+      //           let params = null;
+      //           let callback = (res) => {
+      //             if(res.status === 200 || res.status === 201 ) {
+      //                 this.regist.head.no = res.data.no;
+      //                 this.regist.head.trade_no = res.data.trade_no;
+      //                 this.regist.rows.forEach(row=>{
+      //                     row.no = res.data.no;
+      //                     row.trade_no = res.data.trade_no;
+      //                 })
+      //             }
+      //           }
+
+      //           params = {json : JSON.stringify(this.regist),method:'C'};
+      //           this.axios(url,params,callback);
+      //   },
+      //   addItem() {
+      //     const row = {
+      //             date: this.regist.head.date,
+      //             kind : 0,
+      //             no :  0,
+      //             trade_no : 0,
+      //             serial : this.regist.rows.length + 1,
+      //             shipper : '',
+      //             farmer: '',
+      //             chul_code: '',
+      //             origin: '',
+      //             item: '',
+      //             standard: '',
+      //             grade: '',
+      //             quality: '',
+      //             weit: Number(0, 0),
+      //             qty: 0,
+      //             price: 0,
+      //             gap: '',
+      //             gap_code: '',
+      //             pellet: '',
+      //             pellet_qty: 0,
+      //             box: '',
+      //             box_qty: 0
+      //     };
+      //       this.regist.rows.push(row)
+      //   }, 
+      //   deleteItem (index) {         
+      //      if ( this.confirm(" 정말삭제 하시겠습니까?")){
+      //        const url = this.baseUrl + "/Common/WebServices/WSETSCoreService.asmx/TradeDetailSimple";
+      //        let  copyRegist = {}, params = null;
+
+      //           let callback = (res) => {
+      //             if(res.status === 200 || res.status === 201 ) {                  
+      //             }
+      //           }                
+      //           copyRegist = JSON.parse(JSON.stringify(this.regist))                
+      //           copyRegist.rows = this.regist.rows.splice(index-1,1);
+      //           params = {json : JSON.stringify(copyRegist),method:'D'};
+      //           copyRegist.rows[0].no > 0 && this.axios(url,params,callback);
+      //      }
+      //   },                                        
+        checkForm(e) {      
+           e !== undefined && e.preventDefault();            
+           const inputs = [...document.getElementsByTagName('input')];
+            return inputs.some((input) => {                 
+                if (typeof input.attributes['required'] === 'object' ) {           
+                    if (input.value.replace(/ /gi, "") ==='') {
+                      //  input.focus();
+                      console.log(input)
+                        return true;
+                    }
+                }                     
+              });
+        },
+        initialize() {        
+
+                params = {json : JSON.stringify(this.regist),method:'R'};
+                this.axios(url,params,callback);
+        }     
+      },     
+      computed: {
+
+      },
+      watch : {
+        regist : {       
+          deep:true, 
+          handler(val){
+            console.log('watch',this.regist)
+            
+          }          
+        },        
+      }
+
+
+    });
+
+  </script>
+</body>
+
+</html>

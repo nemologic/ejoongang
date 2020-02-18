@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>전자거래 사이트</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js" defer></script>
+    <script src="dist/vue-carousel.min.js" defer></script>
+    <script src="js/vue.js" defer></script>
+
+</head>
+<body>
+  <div id="vue-app" class="container">
+     <div class="header-container">
+        <ul class="member">
+            <li><a href="/">홈</a></li>
+            <li>로그인</li>
+            <li>정보수정</li>
+        </ul>   
+    </div>
+    <div class="header-container2">
+     <header class="header">             
+        <h1 class="logo"><a href="/"><img src="./images/logo.gif" alt="중앙청과 전자거래"></a></h1>
+         <nav class="navigation">
+            <h2 class="a11y-hidden">메인 메뉴</h2>
+            <ul class="menu">
+                <li class="menu-item"><a href="/" role="button" class="btn-menu">전자거래</a></li>
+                <li class="menu-item"><a href="/" role="button" class="btn-menu">실적조회</a></li>
+                <li class="menu-item"><a href="/" role="button" class="btn-menu">관   리</a> </li>
+            </ul>
+         </nav>
+     </header>
+     </div>
+     <div>    
+        <carousel :data="images"></carousel>
+    </div>
+  </div>    
+</body>
+
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko-KR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>전자거래 사이트</title>
+    <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+<body>
+    <div id="app" class="container">
+        <div class="header-container">
+           <ul class="member">
+               <li><a href="/">홈</a></li>
+               <li>로그인</li>
+               <li>정보수정</li>
+           </ul>   
+       </div>
+       <div class="header-container2">
+        <header class="header">             
+           <h1 class="logo"><a href="/"><img src="../images/logo.gif" alt="중앙청과 전자거래"></a></h1>
+            <nav class="navigation">
+               <h2 class="a11y-hidden">메인 메뉴</h2>
+               <ul class="menu">
+                   <li class="menu-item"><a href="/" role="button" class="btn-menu">전자거래</a></li>
+                   <li class="menu-item"><a href="/" role="button" class="btn-menu">실적조회</a></li>
+                   <li class="menu-item"><a href="/" role="button" class="btn-menu">관   리</a> </li>
+               </ul>
+            </nav>
+        </header>
+        </div>
+        <main class="main">      
+        1  
+          <div class="stepper-wrapper">
+            <el-steps :active="active" align-center>
+              <el-step title="간소화 등록" description="출하자" @click.native="next" style="cursor: pointer;"></el-step>
+              <el-step title="매매체결" description="경매사"></el-step>
+              <el-step title="정산요청" description="중도매인"></el-step>
+              <el-step title="정산" description="경매사"></el-step>              
+            </el-steps>
+        </div>
+        <div style="text-align:center;">
+         
+            <el-table 
+              :data="tableData"
+              style="width: 100%;">
+              <el-table-column
+                prop="date"
+                label="일자"
+                width="180">
+              </el-table-column>
+              <el-table-column
+                prop="name"
+                label="Name"
+                width="180">
+              </el-table-column>
+              <el-table-column
+                prop="address"
+                label="Address">
+              </el-table-column>
+            </el-table>
+          
+       </div>
+          <!-- <p v-else-if=" active === 1">
+              <el-table
+              :data="tableData"
+              style="width: 100%">
+              <el-table-column
+                prop="date"
+                label="일자"
+                width="180">
+              </el-table-column>
+              <el-table-column
+                prop="name"
+                label="Name"
+                width="180">
+              </el-table-column>
+              <el-table-column
+                prop="address"
+                label="Address">
+              </el-table-column>
+            </el-table>
+          </p>
+          <p  v-else-if=" active === 2">
+            <el-table
+            :data="tableData"
+            style="width: 100%">
+            <el-table-column
+              prop="date"
+              label="일자"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="name"
+              label="Name"
+              width="180">
+            </el-table-column>
+            <el-table-column
+              prop="address"
+              label="Address">
+            </el-table-column>
+          </el-table>
+        </p> -->
+          <el-button style="margin-top: 12px; float: right;" @click="next">Next step</el-button>
+        </main>
+        <div>            
+        </div>
+     </div>    
+     <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script> 
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.js"></script>
+
+     <script src="https://unpkg.com/vue/dist/vue.js"></script>
+     <!-- import JavaScript -->
+     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+     
+     <script type="text/babel">
+     new Vue({
+       el:'#app',
+        data: {
+         
+            active: 0,
+            tableData: [{
+            date: '2016-05-03',
+            name: 'Tom',
+            address: 'No. 189, Grove St, Los Angeles'
+          }, {
+            date: '2016-05-02',
+            name: 'Tom',
+            address: 'No. 189, Grove St, Los Angeles'
+          }, {
+            date: '2016-05-04',
+            name: 'Tom',
+            address: 'No. 189, Grove St, Los Angeles'
+          }, {
+            date: '2016-05-01',
+            name: 'Tom',
+            address: 'No. 189, Grove St, Los Angeles'
+          }]
+         
+        },
+     
+        methods: {
+          next : function(){
+            if (this.active++ > 2) this.active = 0;
+          }
+        }
+      });
+     </script>
+</body>
+
+</html>
